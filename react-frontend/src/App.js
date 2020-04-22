@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route } from 'react-router-dom'
+import { Route, BrowserRouter } from 'react-router-dom'
 import LoginP from './Pages/Login'
 import Register from './Pages/Register'
 import AccountSettings from './Pages/Account'
@@ -11,13 +11,13 @@ import './App.css';
 
 function App() {
   return (
-    <React.Fragment>
+    <BrowserRouter>
       <Route path='/' exact component={Home}/>
       <Route path='/register' exact component={Register}/>
       <Route path='/login' exact component={LoginP}/>
       <Route path='/account_settings' exact component={AccountSettings}/>
       <Route path='/checkout' exact component={CheckOut}/>
-    </React.Fragment>
+    </BrowserRouter>
   );
 }
 
