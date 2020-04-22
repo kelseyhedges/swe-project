@@ -25,17 +25,16 @@ module.exports = function(app, connection){
     }
     connection.query(`CALL id_exists('${tablename}', ${i})`, 
     function(err, data){
-      if (err) throw err
+      if (err) {
+        console.log(err)
+        throw err
+      }
       if (data[0][0].exists){
         i = genId(tablename, length);
       }
     });
     return i;
   }
-
-  app.post('/new_item', function(req, rew){
-
-  })
 
   app.post('/new_user', function(req, res){
     const {passcode, email, firstName, lastName} = req.body;
@@ -88,7 +87,6 @@ module.exports = function(app, connection){
   })
 
   app.post('/extract_user_info', function(req, res){
-    console.log('Token received');
     jwt.verify(req.body.token, process.env.SECRET_KEY, 
       {expiresIn: '4h'}, function(err, content){
         if(err){ res.json({error: err}); }
@@ -154,12 +152,54 @@ module.exports = function(app, connection){
   })
 
   app.get('/get_items', function(req, res){
-    q = `SELECT * FROM item`
+    var q = `SELECT * FROM item`
     connection.query(q, function(err, data){
       if(err){res.send(err)}
       else{res.send({'items' : data})}
       }
     )
+  })
+
+  app.post('/new_order', function(req,res){
+    var i = genId('order', 9);
+    var date = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    var user = req.body.user_id || 'NULL';
+
+    console.log(req.body)
+
+    var orderq = `INSERT INTO \`order\` 
+      (order_id, addr1, addr2, city, state, zip, placed, user) VALUES
+      (${i}, '${req.body.addr1}', '${req.body.addr2}', '${req.body.city}',
+      '${req.body.state}', '${req.body.zip}', '${date}', ${user})`
+    console.log(orderq)
+    connection.query(orderq, function(err, data){
+      if(err){res.send(err)}
+      else{
+        var q2 = `INSERT INTO order_contains (quantity, oid, iid) VALUES`
+        var cart = req.body.cart
+        for(var c = 0; c < Object.keys(cart).length; c++){
+          var key = Object.keys(cart)[c]
+          q2 += ` (${cart[key].quantity}, ${i}, ${key})`
+          if(c < Object.keys(req.body.cart).length - 1)
+            q2 += ','
+        }
+        console.log(q2)
+        connection.query(q2, function(err, data){
+          if(err){res.send(err)}
+          else{
+            var q3 = `SELECT * FROM 
+              \`order\` as o, \`item\` as i, \`order_contains\` as c 
+            WHERE
+              o.order_id = ${i} AND c.oid = ${i} AND c.iid = i.item_id`
+            connection.query(q3, function(err, d3){
+              if(err){res.send(err)}
+              else{res.send({'order' : d3})}
+            })
+            console.log(q3)
+          }
+        })
+      }
+    })
   })
 
 }

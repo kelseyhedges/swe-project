@@ -9,7 +9,10 @@ import { FixedSizeList } from 'react-window';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
 import AddShoppingCartIcon from '@material-ui/icons/AddShoppingCart';
+import RemoveIcon from '@material-ui/icons/Remove';
+import AddIcon from '@material-ui/icons/Add';
 import IconButton from '@material-ui/core/IconButton';
+import { Form } from 'react-bootstrap';
 
 const stateList = [
     'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL', 
@@ -99,14 +102,12 @@ export default class CheckOut extends React.Component{
         )
     }
 
-
-
     onSubmit = () => {
         fetch(`http://localhost:3001/verify_address`, {
             method: 'POST',
             headers: {'Content-Type' : 'application/json'},
             body: JSON.stringify({
-                name: this.state.firstname + ' ' + this.state.lastname,
+                name: this.state.toName,
                 street: this.state.street,
                 city: this.state.city,
                 state: this.state.state,
@@ -115,17 +116,30 @@ export default class CheckOut extends React.Component{
           })
           .then(res => res.json())
           .then(result => {
-              console.log(result)
               if(result['Error'])
-                  this.triggerNotif('error', result['Error']);
+                this.triggerNotif('error', result['Error']);
               else
                 this.submitOrder(result)
           })
           .catch(err => console.log(err))
     }
 
-    submitOrder = (address) => {
-
+    submitOrder = (addrContents) => {
+        fetch(`http://localhost:3001/new_order`, {
+            method: 'POST',
+            headers: {'Content-Type' : 'application/json'},
+            body: JSON.stringify({
+                addr1: addrContents.Address1,
+                addr2: addrContents.Address2,
+                city: addrContents.City,
+                state: addrContents.State,
+                zip: addrContents.Zip5,
+                user_id: this.state.userid,
+                cart: this.state.cart
+            })
+          })
+          .then(res => res.json())
+          .then(result => console.log(result))
     }
 
     handleChange = name => event => {
@@ -148,10 +162,23 @@ export default class CheckOut extends React.Component{
 
     loadCart = () => {
         var c = JSON.parse(localStorage.getItem('eCart'))
-        if(c && Object.keys(c).length > 0){
+        if(c){
             this.setState({cart: c})
         }
-        console.log(c)
+    }
+
+    adjustNum = (key, val) => {
+        var c = JSON.parse(localStorage.getItem('eCart'));
+        if(c[key]){
+            c[key].quantity += val
+            if (c[key].quantity == 0)
+                delete c[key]
+        }
+        else{
+            console.log('Item quantity error')
+        }
+        localStorage.setItem('eCart', JSON.stringify(c))
+        this.loadCart()
     }
 
     renderRow = ({index, style}) => {
@@ -167,11 +194,16 @@ export default class CheckOut extends React.Component{
                     />
                 </ListItemAvatar>
                 <ListItemText primary={item.name}/>
-                <ListItemText secondary={`X ${item.quantity}`}/>
                 <ListItemText secondary={`$${item.price.toFixed(2)}`}/>
-                <IconButton edge="end" aria-label="add-to-cart" onClick={() => this.addToCart(item, 1)}>
-                    <AddShoppingCartIcon/>
-                </IconButton>
+                <Form inline>
+                    <IconButton color='primary' aria-label="add-to-cart" onClick={() => this.adjustNum(key, -1)}>
+                        <RemoveIcon/>
+                    </IconButton>
+                    <ListItemText secondary={`X ${item.quantity}`}/>
+                    <IconButton color='primary' aria-label="add-to-cart" onClick={() => this.adjustNum(key, 1)}>
+                        <AddIcon/>
+                    </IconButton>
+                </Form>
             </ListItem>
         )
     }
@@ -196,19 +228,32 @@ export default class CheckOut extends React.Component{
         return Object.values(this.state.cart).map(cost).reduce(sum)
     }
 
+    calcNum = () => {
+        function num(item){
+            return item.quantity;
+        }
+        function sum(prev, next){
+            return prev + next;
+        }
+        if(Object.values(this.state.cart).length > 0)
+            return Object.values(this.state.cart).map(num).reduce(sum);
+        else
+            return 0;
+    }
+
     render(){
         return(
             <div style={{background: '#bdbdbd', overflow: 'hidden', height: '100vh', width: '100vw'}}>
-                <TopBar history={this.props.history}/>
+                <TopBar homePage numInCart={this.calcNum()} history={this.props.history}/>
                 <div style={{marginTop: '30px', textAlign: 'center', justifyContent: 'center'}}>
                     <h1 style={{color: '#424242'}}>Check Out</h1>
                     <Paper style={{
                         marginTop: '30px', margin: 'auto', width: '70%', textAlign: 'center',
-                        minWidth: '350px', justifyContent: 'center', display: 'grid'}}>
+                        minWidth: '750px', justifyContent: 'center', display: 'grid'}}>
                         <h4 style={{marginTop: '10px'}}>Cart Contents</h4>
                         {Object.keys(this.state.cart).length > 0 ? 
                             <React.Fragment>
-                                <FixedSizeList style={{margin: 'auto'}} height={200} width={700} itemSize={70} 
+                                <FixedSizeList style={{margin: 'auto', background: '#fafafa', borderRadius: '7px'}} height={200} width={700} itemSize={70} 
                                     itemCount={Object.keys(this.state.cart).length}>
                                     {this.renderRow}
                                 </FixedSizeList>
@@ -273,8 +318,10 @@ export default class CheckOut extends React.Component{
                             </div>
                             <br/>
                             <Button variant='contained'
+                                disabled={Object.keys(this.state.cart).length < 1}
                                 style={{width: '150px', marginBottom: '20px'}}
                                 color='primary'
+                                onClick={this.onSubmit}
                                 >   
                                 Submit Order
                             </Button>

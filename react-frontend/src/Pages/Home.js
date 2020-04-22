@@ -33,7 +33,6 @@ class Home extends React.Component{
             c[item.item_id] = {'quantity': 1, 'price': item.price, 'name': item.name}
         localStorage.setItem('eCart', JSON.stringify(c))
         this.loadCart()
-        console.log(this.state)
     }
 
     loadCart = () => {
