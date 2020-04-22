@@ -9,7 +9,6 @@ import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
 import AddShoppingCartIcon from '@material-ui/icons/AddShoppingCart';
 import IconButton from '@material-ui/core/IconButton';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 
 class Home extends React.Component{
 
@@ -31,14 +30,13 @@ class Home extends React.Component{
         if(c[item.item_id])
             c[item.item_id].quantity += 1
         else
-            c[item.item_id] = {'quantity': 1, 'price': item.price}
+            c[item.item_id] = {'quantity': 1, 'price': item.price, 'name': item.name}
         localStorage.setItem('eCart', JSON.stringify(c))
         this.loadCart()
         console.log(this.state)
     }
 
     loadCart = () => {
-        //console.log('Load card called')
         function quantity(item){
             return item.quantity;
         }
@@ -63,7 +61,8 @@ class Home extends React.Component{
     renderRow = ({index, style}) => {
         var item = this.state.items[index]
         return(
-            <ListItem divider key={item.item_id} style={style}>
+            <ListItem divider key={item.item_id}
+            style={{...style, background: '#fafafa', borderRadius: '7px'}}>
                 <ListItemAvatar>
                     <Avatar
                         alt={`Avater num ${item.item_id}`}
@@ -81,12 +80,12 @@ class Home extends React.Component{
 
     render(){
         return(
-            <div style={{overflow: 'hidden', height: '100vh', width: '100vw'}}>
-                <TopBar homePage numInCart={this.state.numInCart}/>
-                <div style={{marginTop: '50px', justifyContent: 'center'}}>
+            <div style={{background: '#bdbdbd', overflow: 'hidden', height: '100vh', width: '100vw'}}>
+                <TopBar history={this.props.history} homePage numInCart={this.state.numInCart}/>
+                <div style={{textAlign: 'center', marginTop: '30px', justifyContent: 'center'}}>
+                    <h1 style={{color: '#424242', marginTop: '10px'}}>Catalog</h1>
                     <Paper style={{marginTop: '30px', margin: 'auto', textAlign: 'center',
                     width: '650px', justifyContent: 'center', display: 'grid'}}>
-                        <h1 style={{marginTop: '10px'}}>Catalog</h1>
                         <FixedSizeList style={{margin: 'auto', marginTop: '50px', marginBottom: '50px'}} height={400} width={600} itemSize={100} itemCount={this.state.items.length}>
                             {this.renderRow}
                         </FixedSizeList>

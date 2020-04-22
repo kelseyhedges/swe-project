@@ -89,12 +89,12 @@ class Login extends React.Component{
 
     render(){
         return(
-            <div style={{overflow: 'hidden', height: '100vh', width: '100vw'}}>
-                <TopBar/>
-                <div style={{marginTop: '50px', justifyContent: 'center'}}>
+            <div style={{textAlign: 'center', background: '#bdbdbd', overflow: 'hidden', height: '100vh', width: '100vw'}}>
+                <TopBar history={this.props.history}/>
+                <div style={{marginTop: '30px', justifyContent: 'center'}}>
+                    <h1 style={{color: '#424242'}}>Log In</h1>
                     <Paper style={{marginTop: '30px', margin: 'auto', width: '25%', textAlign: 'center',
-                    minWidth: '350px', height: '300px', justifyContent: 'center', display: 'grid'}}>
-                        <h1>Login</h1>
+                    minWidth: '350px', height: '220px', justifyContent: 'center', display: 'grid'}}>
                         <form className={this.props.classes.root}>
                             <TextField
                             id='username'

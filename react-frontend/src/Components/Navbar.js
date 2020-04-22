@@ -4,12 +4,16 @@ import Badge from '@material-ui/core/Badge';
 import IconButton from '@material-ui/core/IconButton';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import { grey } from '@material-ui/core/colors';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 
 const no_user = [
+    {link: '/', name: 'Home'},
     {link: '/register', name: 'Register'},
     {link: '/login', name: 'Login'},
 ]
 const user = [
+    {link: '/', name: 'Home'},
     {link: '/account_settings', name: 'My Account'},
 ]
 
@@ -19,7 +23,16 @@ class TopBar extends Component {
         activeUser: null,
         links: no_user,
         inCart: {},
-        numInCart: 0
+        numInCart: 0,
+        menuAnchor: null
+    }
+
+    openMenu = (event) => {
+        this.setState({menuAnchor: event.currentTarget})
+    }
+
+    closeMenu = () => {
+        this.setState({menuAnchor: null})
     }
 
     logout = () => {
@@ -97,13 +110,21 @@ class TopBar extends Component {
                         :
                         <Button variant="outline-success" size="sm" href="/login" >Login</Button>
                         }
-                        <IconButton aria-label="cart">
-                            <Badge badgeContent={this.props.homePage ? this.props.numInCart : this.state.numInCart} color="secondary">
+                        <IconButton aria-label="cart" onClick={this.openMenu}>
+                            <Badge 
+                            badgeContent={this.props.homePage ? this.props.numInCart : this.state.numInCart} 
+                            color="secondary">
                                 <ShoppingCartIcon style={{color: grey[50]}}/>
                             </Badge>
                         </IconButton>
                     </Form>
                 </Navbar>
+                <Menu anchorEl={this.state.menuAnchor}
+                    keepMounted
+                    open={Boolean(this.state.menuAnchor)}
+                    onClose={this.closeMenu}>
+                    <MenuItem onClick={() => this.props.history.push("/checkout")}>Check Out</MenuItem>
+                </Menu>
             </React.Fragment>
         );
     }

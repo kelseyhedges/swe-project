@@ -64,7 +64,6 @@ class RegForm extends React.Component{
     render(){
         return(
             <div style={{textAlign: 'center'}}>
-                <h1 style={{marginTop: '10px'}}>Register</h1>
                 <form className={this.props.classes.root}>
                     <TextField
                     id='first-name'

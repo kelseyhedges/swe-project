@@ -160,7 +160,7 @@ export default class AccountSettings extends React.Component{
     render(){
         return(
             <div style={{overflow: 'hidden', height: '100vh', width: '100vw'}}>
-                <TopBar/>
+                <TopBar history={this.props.history}/>
                 <div style={{marginTop: '50px', justifyContent: 'center'}}>
                     <Paper style={{marginTop: '30px', margin: 'auto', width: '70%', textAlign: 'center',
                     minWidth: '350px', justifyContent: 'center', display: 'grid'}}>

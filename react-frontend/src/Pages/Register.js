@@ -55,9 +55,10 @@ class RegisterStyled extends React.Component{
 
     render(){
         return(
-            <div style={{overflow: 'hidden', height: '100vh', width: '100vw'}}>
-            <TopBar/>
-            <div style={{marginTop: '50px', justifyContent: 'center'}}>
+            <div style={{background: '#bdbdbd', overflow: 'hidden', height: '100vh', width: '100vw'}}>
+            <TopBar history={this.props.history}/>
+            <div style={{textAlign: 'center', marginTop: '30px', justifyContent: 'center'}}>
+                <h1 style={{color: '#424242'}}>Register</h1>
                 <Paper style={{marginTop: '30px', margin: 'auto', width: '25%', textAlign: 'center',
                  minWidth: '350px', justifyContent: 'center', display: 'grid'}}>
                     <RegisterForm onSubmit={this.onSubmit}/>
