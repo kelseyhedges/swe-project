@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import { Navbar, Nav, Form, Button } from 'react-bootstrap';
-
+import Badge from '@material-ui/core/Badge';
+import IconButton from '@material-ui/core/IconButton';
+import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
+import { grey } from '@material-ui/core/colors';
 
 const no_user = [
     {link: '/register', name: 'Register'},
@@ -14,11 +17,14 @@ class TopBar extends Component {
 
     state = {
         activeUser: null,
-        links: no_user
+        links: no_user,
+        inCart: {},
+        numInCart: 0
     }
 
     logout = () => {
         localStorage.removeItem('usertoken')
+        localStorage.removeItem('eCart')
         window.location.reload(false);
         this.setState({activeUser: null, links: no_user})
     }
@@ -47,8 +53,23 @@ class TopBar extends Component {
         }
     }
 
+    loadCart = () => {
+        //console.log('Load card called')
+        function quantity(item){
+            return item.quantity;
+        }
+        function sum(prev, next){
+            return prev + next;
+        }
+        var c = JSON.parse(localStorage.getItem('eCart'))
+        if(c && Object.keys(c).length > 0){
+            this.setState({inCart: c, numInCart: Object.values(c).map(quantity).reduce(sum)})
+        }
+    }
+
     componentDidMount = () => {
         this.getUserInfo()
+        this.loadCart()
     }
 
     render() {
@@ -76,6 +97,11 @@ class TopBar extends Component {
                         :
                         <Button variant="outline-success" size="sm" href="/login" >Login</Button>
                         }
+                        <IconButton aria-label="cart">
+                            <Badge badgeContent={this.props.homePage ? this.props.numInCart : this.state.numInCart} color="secondary">
+                                <ShoppingCartIcon style={{color: grey[50]}}/>
+                            </Badge>
+                        </IconButton>
                     </Form>
                 </Navbar>
             </React.Fragment>

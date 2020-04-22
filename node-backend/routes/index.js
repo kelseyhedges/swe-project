@@ -153,4 +153,13 @@ module.exports = function(app, connection){
     })
   })
 
+  app.get('/get_items', function(req, res){
+    q = `SELECT * FROM item`
+    connection.query(q, function(err, data){
+      if(err){res.send(err)}
+      else{res.send({'items' : data})}
+      }
+    )
+  })
+
 }
