@@ -1,6 +1,9 @@
 var express = require('express');
 const mysql = require('mysql');
 const jwt = require('jsonwebtoken')
+const xbuild = require('xmlbuilder');
+const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+const xml2json = require('xml2json');
 
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -29,6 +32,10 @@ module.exports = function(app, connection){
     });
     return i;
   }
+
+  app.post('/new_item', function(req, rew){
+
+  })
 
   app.post('/new_user', function(req, res){
     const {passcode, email, firstName, lastName} = req.body;
@@ -66,6 +73,20 @@ module.exports = function(app, connection){
     })
   })
 
+  app.post('/user_address', function(req, res){
+    var q = `SELECT * FROM user_info WHERE user_id = ${req.body.userid}`;
+    connection.query(q, function(err, data){
+      if(err){res.send(err)}
+      else if (data.length < 1){
+        res.status(400).json({error: 'User does not exist'})
+      }
+      else{
+        res.json(data[0])
+        }
+      }
+    )
+  })
+
   app.post('/extract_user_info', function(req, res){
     console.log('Token received');
     jwt.verify(req.body.token, process.env.SECRET_KEY, 
@@ -77,6 +98,59 @@ module.exports = function(app, connection){
           res.json({...content});
         }
       });
+  })
+
+  app.post('/verify_address', function(req, res){
+    var url = 'https://secure.shippingapis.com/ShippingAPI.dll?API=Verify&XML='
+    var xmlobj = {
+      'AddressValidateRequest' : {
+        '@USERID' : '896UNIVE6945',
+        'Revision' : {'#text' : '1'},
+        'Address' : {
+          '@ID' : '0',
+          'Address1' : {'#text' : req.body.name},
+          'Address2' : {'#text' : req.body.street},
+          'City' : {'#text' : req.body.city},
+          'State' : {'#text' : req.body.state},
+          'Zip5' : {'#text' : req.body.zip},
+          'Zip4' : {}
+        }
+      }
+    }
+    var xml = xbuild.create(xmlobj, {encoding: 'utf-8'})
+    url += xml.end()
+    console.log(xml.end({pretty: true}));
+    console.log(url)
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() { 
+      if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
+        var v = JSON.parse(xml2json.toJson(xmlHttp.responseText))
+        console.log(v)
+        if (v['AddressValidateResponse']['Address']['Error'])
+          res.send({'Error' : v['AddressValidateResponse']['Address']['Error']['Description']})
+        else
+          res.send(v['AddressValidateResponse']['Address'])
+      }
+    }
+    xmlHttp.open("GET", url, true); // true for asynchronous 
+    xmlHttp.send(null);
+  })
+
+  app.post('/update_address', function(req, res){
+    var q = `UPDATE user_info 
+      SET 
+        firstname = '${req.body.firstname}',
+        lastname = '${req.body.lastname}',
+        street = '${req.body.street}',
+        city = '${req.body.city}',
+        state = '${req.body.state}',
+        zip = ${req.body.zip}
+      WHERE
+        user_id = ${req.body.userid}`
+    connection.query(q, function(err, data){
+      if(err){res.send(err)}
+      else{res.send({'status': 1})}
+    })
   })
 
 }

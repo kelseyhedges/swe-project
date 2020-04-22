@@ -1,16 +1,26 @@
 import React, { Component } from 'react';
 import { Navbar, Nav, Form, Button } from 'react-bootstrap';
 
+
+const no_user = [
+    {link: '/register', name: 'Register'},
+    {link: '/login', name: 'Login'},
+]
+const user = [
+    {link: '/account_settings', name: 'My Account'},
+]
+
 class TopBar extends Component {
 
     state = {
-        activeUser: null
+        activeUser: null,
+        links: no_user
     }
 
     logout = () => {
         localStorage.removeItem('usertoken')
         window.location.reload(false);
-        this.setState({activeUser: null})
+        this.setState({activeUser: null, links: no_user})
     }
 
     getUserInfo = () => {
@@ -27,11 +37,11 @@ class TopBar extends Component {
               .then(result => {
                   console.log(result)
                   if(!result.error){
-                    this.setState({activeUser: result}, console.log(this.state))
+                    this.setState({activeUser: result, links: user}, console.log(this.state))
                 }
                 else{
                     localStorage.removeItem('usertoken');
-                    this.setState({activeUser: null})
+                    this.setState({activeUser: null, links: no_user})
                 }
                 })
         }
@@ -49,8 +59,9 @@ class TopBar extends Component {
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="mr-auto">
-                        <Nav.Link href="/login">Login</Nav.Link>
-                        <Nav.Link href="/register" >Register</Nav.Link>
+                        {this.state.links.map(item => (
+                            <Nav.Link href={item.link}>{item.name}</Nav.Link>
+                        ))}
                     </Nav>
                     </Navbar.Collapse>
                     <Form inline>
