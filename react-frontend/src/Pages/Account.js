@@ -60,19 +60,17 @@ export default class AccountSettings extends React.Component{
                 }
                 else{
                     localStorage.removeItem('usertoken');
-                    this.setState({firstname: '',
-                    lastname: '',
-                    street: '',
-                    city: '',
-                    state: '',
-                    zip: '',})
+                    this.props.history.push("/login");
                 }
                 })
         }
     }
 
     componentDidMount = () => {
-        this.getUserInfo()
+        if (!localStorage.getItem('usertoken')){
+            this.props.history.push('/login')
+        }
+        this.getUserInfo();
     }
 
     triggerNotif = (variant, message, callback = () => {}) => {
@@ -110,7 +108,7 @@ export default class AccountSettings extends React.Component{
           .then(res => res.json())
           .then(result => {
               if(result.status && result.status == 1)
-                this.triggerNotif('success', 'Success!', this.getAddr)
+                this.setState({editMode: false}, this.triggerNotif('success', 'Success!', this.getAddr))
           })
           .catch(err => {
               console.log(err)
