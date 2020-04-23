@@ -107,7 +107,7 @@ export default class AccountSettings extends React.Component{
           })
           .then(res => res.json())
           .then(result => {
-              if(result.status && result.status == 1)
+              if(result.status && result.status === 1)
                 this.setState({editMode: false}, this.triggerNotif('success', 'Success!', this.getAddr))
           })
           .catch(err => {

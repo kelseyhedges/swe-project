@@ -54,9 +54,8 @@ class TopBar extends Component {
               })
               .then(res => res.json())
               .then(result => {
-                  console.log(result)
                   if(!result.error){
-                    this.setState({activeUser: result, links: user}, console.log(this.state))
+                    this.setState({activeUser: result, links: user})
                 }
                 else{
                     localStorage.removeItem('usertoken');
@@ -94,7 +93,7 @@ class TopBar extends Component {
                     <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="mr-auto">
                         {this.state.links.map(item => (
-                            <Nav.Link href={item.link}>{item.name}</Nav.Link>
+                            <Nav.Link key={item.name} href={item.link}>{item.name}</Nav.Link>
                         ))}
                     </Nav>
                     </Navbar.Collapse>

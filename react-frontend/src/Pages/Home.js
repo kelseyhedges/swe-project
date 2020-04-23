@@ -1,7 +1,6 @@
 import React from 'react'
-import { Paper, Button, TextField } from '@material-ui/core';
+import { Paper } from '@material-ui/core';
 import TopBar from '../Components/Navbar';
-import NotifToast from '../Components/Notifs';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import { FixedSizeList } from 'react-window';

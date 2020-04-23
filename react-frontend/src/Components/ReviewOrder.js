@@ -6,13 +6,13 @@ import CartContents from '../Components/CartContents';
 
 const styles = theme => ({
     listItem: {
-      padding: `${theme.spacing.unit}px 0`,
+      padding: `${theme.spacing(1)}px 0`,
     },
     total: {
       fontWeight: '700',
     },
     title: {
-      marginTop: theme.spacing.unit * 2,
+      marginTop: theme.spacing(2),
     },
   });
 
@@ -39,13 +39,13 @@ function ReviewOrder(props){
             calcTotal={props.calcTotal}
             calcNum={props.calcNum}
         />
-        <Grid container spacing={16}>
+        <Grid container>
             <Grid item xs={12} sm={6}>
             <Typography variant="h6" gutterBottom className={classes.title}>
                 Shipping To
             </Typography>
             {shipping.map(item => (
-                <Typography gutterBottom>{item}</Typography>
+                <Typography key={item} gutterBottom>{item}</Typography>
                 ))}
             </Grid>
             <Grid item container direction="column" xs={12} sm={6}>

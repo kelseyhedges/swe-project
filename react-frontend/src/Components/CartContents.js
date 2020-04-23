@@ -63,7 +63,7 @@ export default function CartContents(props){
                     itemCount={Object.keys(props.cart).length}>
                     {renderRow}
                 </FixedSizeList>
-                <ListItem dense divder style={{background: '#fafafa', margin: 'auto', 
+                <ListItem dense style={{background: '#fafafa', margin: 'auto', 
                     textAlign: 'right', marginTop: '0px', width: '700px'}}>
                     <ListItemText primary={' '}/>
                     <ListItemText primary={' '}/>
