@@ -159,13 +159,13 @@ export default class AccountSettings extends React.Component{
 
     render(){
         return(
-            <div style={{overflow: 'hidden', height: '100vh', width: '100vw'}}>
+            <div style={{background: '#bdbdbd', overflow: 'hidden', height: '100vh', width: '100vw'}}>
                 <TopBar history={this.props.history}/>
-                <div style={{marginTop: '50px', justifyContent: 'center'}}>
+                <div style={{marginTop: '30px', justifyContent: 'center', textAlign: 'center'}}>
+                    <h1 style={{color: '#424242', marginTop: '10px'}}>Account Settings</h1>
                     <Paper style={{marginTop: '30px', margin: 'auto', width: '70%', textAlign: 'center',
                     minWidth: '350px', justifyContent: 'center', display: 'grid'}}>
-                        <h1>Account Settings</h1>
-                        <form style={{display: 'inline-block', width: '80vh', margin: 'auto'}}>
+                        <form style={{display: 'inline-block', width: '80vh', margin: 'auto', marginTop: '10px'}}>
                             <div style={{width: '80vh', display: 'inline'}}>
                             <TextField
                             helperText='First Name'
@@ -229,6 +229,7 @@ export default class AccountSettings extends React.Component{
                             </div>
                         </form>
                         <Button 
+                        color={this.state.editMode ? 'primary' : 'secondary'}
                         onClick={this.state.editMode ? this.onSubmit : () => this.setState({editMode: true})}
                         style={{margin: 'auto', marginBottom: '15px', marginTop: '15px'}}
                         variant='contained'>{this.state.editMode ? 'Done' : 'Edit'}</Button>
