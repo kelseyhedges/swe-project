@@ -1,29 +1,60 @@
 import React from 'react'
-import { Paper, Button, TextField } from '@material-ui/core';
+import { Paper, Button } from '@material-ui/core';
 import TopBar from '../Components/Navbar';
+import CartContents from '../Components/CartContents';
+import ShippingInfo from '../Components/ShippingInfo';
+import PaymentInfo from '../Components/PaymentInfo';
+import ReviewOrder from '../Components/ReviewOrder';
 import NotifToast from '../Components/Notifs';
-import MenuItem from '@material-ui/core/MenuItem';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import { FixedSizeList } from 'react-window';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-import Avatar from '@material-ui/core/Avatar';
-import AddShoppingCartIcon from '@material-ui/icons/AddShoppingCart';
-import RemoveIcon from '@material-ui/icons/Remove';
-import AddIcon from '@material-ui/icons/Add';
-import IconButton from '@material-ui/core/IconButton';
-import { Form } from 'react-bootstrap';
+import Stepper from '@material-ui/core/Stepper';
+import Step from '@material-ui/core/Step';
+import StepLabel from '@material-ui/core/StepLabel';
+import withStyles from '@material-ui/core/styles/withStyles';
 
-const stateList = [
-    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL', 
-    'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 
-    'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 
-    'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 
-    'SC', 'SD', 'TN', 'TX', 'UT', 'VT','VA', 'WA', 'WV', 'WI', 'WY']
+const styles = theme => ({
+    layout: {
+        minWidth: '800px',
+        marginLeft: theme.spacing.unit * 2,
+        marginRight: theme.spacing.unit * 2,
+        [theme.breakpoints.up(600 + theme.spacing.unit * 2 * 2)]: {
+            width: 750,
+            marginLeft: 'auto',
+            marginRight: 'auto',
+        },
+    },
+    paper: {
+        marginTop: theme.spacing.unit * 3,
+        marginBottom: theme.spacing.unit * 3,
+        padding: theme.spacing.unit * 2,
+        [theme.breakpoints.up(600 + theme.spacing.unit * 3 * 2)]: {
+        marginTop: theme.spacing.unit * 6,
+        marginBottom: theme.spacing.unit * 6,
+        padding: theme.spacing.unit * 3,
+        },
+    },
+    grow: {
+        flexGrow: 1,
+    },
+    stepper: {
+        padding: `${theme.spacing.unit * 3}px 0 ${theme.spacing.unit * 5}px`
+    },
+    
+    buttons: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+    },
+    button: {
+        marginTop: theme.spacing.unit * 3,
+        marginLeft: theme.spacing.unit,
+    },
+});
 
-export default class CheckOut extends React.Component{
+const steps = ['Cart Contents', 'Shipping Information', 'Payment Information', 'Review Your Order']
+
+class CheckOut extends React.Component{
 
     state = {
+        activeStep: 0,
         userid: '',
         toName: '',
         firstname: '',
@@ -33,6 +64,10 @@ export default class CheckOut extends React.Component{
         state: '',
         zip: '',
         cart: {},
+        nameOnCard: "",
+        cardNumber: "",
+        cardExpiration: "",
+        cardCVV: "",
         notifVar: 'error',
         notifMsg: '',
         toastOpen: false,
@@ -100,6 +135,69 @@ export default class CheckOut extends React.Component{
             variant={this.state.notifVar}
             message={this.state.notifMsg}/>
         )
+    }
+
+    handleNext = () => {
+        this.setState(state => ({
+            activeStep: state.activeStep + 1,
+        }));
+    };
+    handleBack = () => {
+        this.setState(state => ({
+            activeStep: state.activeStep - 1,
+        }));
+    };
+
+    validateInput(step){
+        if(step === 0){
+            return(this.state.email.length > 1 && this.state.numTickets > 0 && this.state.entryDate !== null && this.state.cancelled !== true);
+        }
+        else if(step === 1){
+            return(this.state.nameOnCard.length > 1 && this.state.cardCVV.length > 1 && this.state.cardExpiration.length > 1 && this.state.cardNumber.length > 1);
+        }
+        else{
+            return false;
+        }
+    }
+
+    getStepContent(step) {
+        switch (step) {
+            case 0:
+                return (
+                <React.Fragment>
+                    <h4>Cart Contents</h4>
+                    <CartContents cart={this.state.cart}
+                    calcTotal={this.calcTotal}
+                    calcNum={this.calcNum}
+                    adjustNum={this.adjustNum}
+                    />
+                </React.Fragment>);
+            case 1:
+                return (
+                <React.Fragment>
+                    <h4>Shipping Information</h4>
+                    <ShippingInfo state={this.state} 
+                    handleChange={this.handleChange}/>
+                </React.Fragment>
+                )
+            case 2:
+                return(
+                <React.Fragment>
+                    <h4>Payment Information</h4>
+                    <PaymentInfo val={this.state} 
+                    handleChange={this.handleChange}/>
+                </React.Fragment>)
+            case 3:
+                return (
+                <React.Fragment>
+                    <h4>Review Order</h4>
+                    <ReviewOrder val={this.state}
+                    calcTotal={this.calcTotal}
+                    calcNum={this.calcNum}/>
+                </React.Fragment>)
+            default:
+                throw new Error('Unknown step');
+        }
     }
 
     onSubmit = () => {
@@ -181,43 +279,6 @@ export default class CheckOut extends React.Component{
         this.loadCart()
     }
 
-    renderRow = ({index, style}) => {
-        var key = Object.keys(this.state.cart)[index]
-        var item = this.state.cart[key]
-        return(
-            <ListItem dense divider key={item.item_id} 
-            style={{...style, background: '#fafafa', borderRadius: '7px'}}>
-                <ListItemAvatar>
-                    <Avatar
-                        alt={`Avater num ${item.item_id}`}
-                        src={`/productImg${key % 3}.jpg`}
-                    />
-                </ListItemAvatar>
-                <ListItemText primary={item.name}/>
-                <ListItemText secondary={`$${item.price.toFixed(2)}`}/>
-                <Form inline>
-                    <IconButton color='primary' aria-label="add-to-cart" onClick={() => this.adjustNum(key, -1)}>
-                        <RemoveIcon/>
-                    </IconButton>
-                    <ListItemText secondary={`X ${item.quantity}`}/>
-                    <IconButton color='primary' aria-label="add-to-cart" onClick={() => this.adjustNum(key, 1)}>
-                        <AddIcon/>
-                    </IconButton>
-                </Form>
-            </ListItem>
-        )
-    }
-
-    renderDisabled = ({index, style}) => {
-        return(
-        <ListItem disabled>
-            <ListItemText 
-                primary={'Your cart is empty. Please add some items to continue!'}
-                style={{textAlign: 'center'}}/>
-        </ListItem>
-        )
-    }
-
     calcTotal = () => {
         function cost(item){
             return item.quantity * item.price;
@@ -242,94 +303,62 @@ export default class CheckOut extends React.Component{
     }
 
     render(){
+        const { classes } = this.props;
+        const { activeStep } = this.state;
+
         return(
             <div style={{background: '#bdbdbd', overflow: 'hidden', height: '100vh', width: '100vw'}}>
                 <TopBar homePage numInCart={this.calcNum()} history={this.props.history}/>
                 <div style={{marginTop: '30px', textAlign: 'center', justifyContent: 'center'}}>
                     <h1 style={{color: '#424242'}}>Check Out</h1>
-                    <Paper style={{
-                        marginTop: '30px', margin: 'auto', width: '70%', textAlign: 'center',
+                    <main className={classes.layout}>
+                    <Paper className={classes.paper} style={{
+                        marginTop: '30px', margin: 'auto', textAlign: 'center',
                         minWidth: '750px', justifyContent: 'center', display: 'grid'}}>
-                        <h4 style={{marginTop: '10px'}}>Cart Contents</h4>
-                        {Object.keys(this.state.cart).length > 0 ? 
-                            <React.Fragment>
-                                <FixedSizeList style={{margin: 'auto', background: '#fafafa', borderRadius: '7px'}} height={200} width={700} itemSize={70} 
-                                    itemCount={Object.keys(this.state.cart).length}>
-                                    {this.renderRow}
-                                </FixedSizeList>
-                                <ListItem dense divder style={{background: '#fafafa', margin: 'auto', 
-                                    textAlign: 'right', marginTop: '0px', width: '700px'}}>
-                                    <ListItemText primary={' '}/>
-                                    <ListItemText primary={' '}/>
-                                    <ListItemText secondary={'Subtotal: '}/>
-                                    <ListItemText primary={`$${this.calcTotal().toFixed(2)}`}/>
-                                </ListItem>
-                                <ListItem dense style={{background: '#fafafa', borderRadius: '7px', width: '700px', 
-                                    textAlign: 'right', margin: 'auto', marginBottom: '15px' }}>
-                                    <ListItemText primary={' '}/>
-                                    <ListItemText primary={' '}/>
-                                    <ListItemText secondary={'Total: '}/>
-                                    <ListItemText primary={`$${(this.calcTotal() * 1.0825).toFixed(2)}`}/>
-                                </ListItem>
-                            </React.Fragment>
-                            :
-                            <FixedSizeList style={{marginTop: '40px', margin: 'auto'}} height={100} 
-                                width={600} itemSize={100} 
-                                itemCount={1}>
-                                {this.renderDisabled}
-                            </FixedSizeList>
-                        }
-                        <h4>Shipping Information</h4>
-                        <form style={{display: 'inline-block', width: '80%', margin: 'auto'}}>
-                            <div style={{width: '80vh', display: 'inline'}}>
-                            <TextField
-                            helperText='Ship To (Name)'
-                            value={this.state.toName}
-                            style={{margin: 'auto', padding: '10px'}}
-                            onChange={this.handleChange('toName')}/>
-                            <TextField
-                            helperText='Street Address'
-                            value={this.state.street}
-                            style={{margin: 'auto', padding: '10px'}}
-                            onChange={this.handleChange('street')}/>
-                            <TextField
-                            helperText='City'
-                            value={this.state.city}
-                            style={{margin: 'auto', padding: '10px'}}
-                            onChange={this.handleChange('city')}/>
-                            <TextField
-                            helperText='State'
-                            select
-                            value={this.state.state}
-                            style={{margin: 'auto', padding: '10px'}}
-                            onChange={this.handleChange('state')}>
-                                {stateList.map((statename) => (
-                                    <MenuItem key={statename} value={statename}>
-                                        {statename}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                            <TextField
-                            helperText='Zip Code'
-                            value={this.state.zip}
-                            type='number'
-                            style={{margin: 'auto', padding: '10px', width: '150px'}}
-                            onChange={this.handleChange('zip')}/>
-                            </div>
-                            <br/>
-                            <Button variant='contained'
-                                disabled={Object.keys(this.state.cart).length < 1}
-                                style={{width: '150px', marginBottom: '20px'}}
-                                color='primary'
-                                onClick={this.onSubmit}
-                                >   
-                                Submit Order
-                            </Button>
-                        </form>
+                        <Stepper activeStep={activeStep} className={classes.stepper}>
+                        {steps.map(label => (
+                            <Step key={label}>
+                            <StepLabel >{label}</StepLabel>
+                            </Step>
+                        ))}
+                        </Stepper>
+                        <React.Fragment>
+                            {activeStep === steps.length ? (
+                                <React.Fragment>
+                                    <h4>Order Summary</h4>
+                                </React.Fragment>
+                            ) : (
+                                <React.Fragment>
+                                    {this.getStepContent(activeStep)}
+                                    <div className={classes.buttons}>
+                                        {activeStep !== 0 && (
+                                        <Button onClick={this.handleBack} className={classes.button}>
+                                            Back
+                                        </Button>
+                                        )}
+                                        {activeStep === steps.length - 1 ? (<Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={this.addTickets}
+                                        className={classes.button}
+                                        >Place Order</Button>) : (<Button
+                                        variant="contained"
+                                        color="primary"
+                                        //disabled={!this.validateInput(activeStep)}
+                                        onClick={this.handleNext}
+                                        className={classes.button}
+                                        >Next</Button>)}
+                                    </div>
+                                </React.Fragment>
+                            )}
+                        </React.Fragment>                        
                         {this.notifToast()}
                     </Paper>
+                    </main>
                 </div>
             </div>
         )
     }
 }
+
+export default withStyles(styles)(CheckOut);
