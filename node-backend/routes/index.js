@@ -183,7 +183,6 @@ module.exports = function(app, connection){
           if(c < Object.keys(req.body.cart).length - 1)
             q2 += ','
         }
-        console.log(q2)
         connection.query(q2, function(err, data){
           if(err){res.send(err)}
           else{
@@ -193,9 +192,27 @@ module.exports = function(app, connection){
               o.order_id = ${i} AND c.oid = ${i} AND c.iid = i.item_id`
             connection.query(q3, function(err, d3){
               if(err){res.send(err)}
-              else{res.send({'order' : d3})}
+              else{
+                if(d3.length < 1)
+                  res.send({'error' : 'Something went wrong'});
+                else{
+                  var keylist = ['order_id', 'addr1', 'addr2', 'city', 'state', 'zip', 'user']
+                  var order = {'items' : []}
+                  for(i in keylist){
+                    order[keylist[i]] = d3[0][keylist[i]]
+                  }
+                  for(i in d3){
+                    order['items'].push({
+                      'item_id' : d3[i].item_id,
+                      'name' : d3[i].name,
+                      'price' : d3[i].price,
+                      'quantity' : d3[i].quantity
+                    })
+                  }
+                  res.send({'order' : order})
+                }
+              }
             })
-            console.log(q3)
           }
         })
       }

@@ -73,9 +73,13 @@ class TopBar extends Component {
         function sum(prev, next){
             return prev + next;
         }
-        var c = JSON.parse(localStorage.getItem('eCart'))
-        if(c && Object.keys(c).length > 0){
-            this.setState({inCart: c, numInCart: Object.values(c).map(quantity).reduce(sum)})
+        var c = localStorage.getItem('eCart')
+        console.log(c)
+        if(c){
+            c = JSON.parse(c)
+            if(Object.keys(c).length > 0){
+                this.setState({inCart: c, numInCart: Object.values(c).map(quantity).reduce(sum)})
+            }
         }
     }
 

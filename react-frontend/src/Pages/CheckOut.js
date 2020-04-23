@@ -6,6 +6,7 @@ import ShippingInfo from '../Components/ShippingInfo';
 import PaymentInfo from '../Components/PaymentInfo';
 import ReviewOrder from '../Components/ReviewOrder';
 import NotifToast from '../Components/Notifs';
+import Confirmation from '../Components/Confirmation'
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
@@ -71,7 +72,8 @@ class CheckOut extends React.Component{
         notifVar: 'error',
         notifMsg: '',
         toastOpen: false,
-        addrValidated: false
+        addrValidated: false,
+        order: {}
     }
 
     getAddr = () => {
@@ -275,8 +277,15 @@ class CheckOut extends React.Component{
           })
           .then(res => res.json())
           .then(result => {
-              // ********************************************* ORDER PLACED GO TO ORDER CONFIRMATIN PAGE ****************************************************
-              console.log(result)
+              if(result.error){
+                  this.triggerNotif('error', 'Something went wrong. :( Please try again.');
+              }
+              else{ // ********************************************* ORDER PLACED SUCCESSFULLY ****************************************************
+                localStorage.setItem('eCart', JSON.stringify({}))
+                this.loadCart()
+                this.setState({order: result.order, activeStep: steps.length})
+                this.triggerNotif('success', 'Order Placed!')
+              }
             })
     }
 
@@ -326,7 +335,10 @@ class CheckOut extends React.Component{
         function sum(prev, next){
             return prev + next;
         }
-        return Object.values(this.state.cart).map(cost).reduce(sum)
+        if(Object.values(this.state.cart).length > 0)
+            return Object.values(this.state.cart).map(cost).reduce(sum);
+        else
+            return 0;
     }
 
     calcNum = () => {
@@ -365,7 +377,12 @@ class CheckOut extends React.Component{
                         <React.Fragment>
                             {activeStep === steps.length ? (
                                 <React.Fragment>
-                                    <h4>Order Summary</h4>
+                                    <h4>Thank You For Your Purchase!</h4>
+                                    <h6>Order #{this.state.order.order_id}</h6>
+                                    <Confirmation order={this.state.order}
+                                    calcTotal={this.calcTotal}
+                                    calcNum={this.calcNum}
+                                    />
                                 </React.Fragment>
                             ) : (
                                 <React.Fragment>
